@@ -15,14 +15,14 @@
 
 -- This is the main script.
 -- Plays games using the player whose name is passed as parameter.
--- Usage: lua play.lua [player_file [num_games]]
+-- Usage: lua entropy2048.lua [player_file [num_games]]
 
 local player_file, num_games = ...
 
 local game_manager = require("game_manager")
 local verbose = false  -- Set this true to print the board at each move.
 
-player_file = player_file or "interactive_player"
+player_file = player_file or "random_player"
 num_games = num_games or 1
 local player = require(player_file)
 
@@ -43,6 +43,7 @@ local seed = os.time()
 io.write("Random seed: ", seed, "\n")
 math.randomseed(seed)
 
+io.write("Running ", num_games, " games with player '", player_file, "'\n")
 local average, max, best_tile = 0, 0, 0
 for i = 1, num_games do
   local score, current_best_tile = play_game()
