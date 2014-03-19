@@ -92,6 +92,14 @@ function game_manager:new()
     return num_cells
   end
 
+  function game:get_num_rows()
+    return num_rows
+  end
+
+  function game:get_num_columns()
+    return num_columns
+  end
+
   function game:get_board()
     return board
   end

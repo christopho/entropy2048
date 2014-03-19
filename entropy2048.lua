@@ -26,7 +26,7 @@ player_file = player_file or "random_player"
 num_games = num_games or 1
 local player = require(player_file)
 
--- Plays a game and returns the score.
+-- Plays a new game and returns the score.
 local function play_game()
   local game = game_manager:new()
   assert(game:get_score() == 0)
