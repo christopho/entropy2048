@@ -223,15 +223,19 @@ function game_manager:new()
             moved = true
           else
             -- The destination is a tile that cannot be merged. Find an empty cell.
+            local current_moved = false
             for i2 = first_i + increment, i - increment, increment do
               dst_index = get_index(i2, j)
-              if get_tile(dst_index) == nil then
+              if get_tile(dst_index) == nil and not current_moved then
                 move_tile(src_index, dst_index)
                 moved = true
-                break
+                current_moved = true
+                dst_candidate = i2
               end
             end
-            dst_candidate = i
+            if not current_moved then
+              dst_candidate = i
+            end
           end
         end
       end
@@ -279,15 +283,19 @@ function game_manager:new()
             moved = true
           else
             -- The destination is a tile that cannot be merged. Find an empty cell.
+            local current_moved = false
             for j2 = first_j + increment, j - increment, increment do
               dst_index = get_index(i, j2)
-              if get_tile(dst_index) == nil then
+              if get_tile(dst_index) == nil and not current_moved then
                 move_tile(src_index, dst_index)
                 moved = true
-                break
+                current_moved = true
+                dst_candidate = j2
               end
             end
-            dst_candidate = j
+            if not current_moved then
+              dst_candidate = j
+            end
           end
         end
       end
