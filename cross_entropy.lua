@@ -11,19 +11,20 @@ local player = require("features_player")
 
 local noise = 10.0
 
--- Plays a new game and returns the score and the best tile.
+-- Plays a new game and returns the score.
 local function play_game()
   local game = game_manager:new()
+  assert(game:get_score() == 0)
   while game:is_alive() do
     game:move(player:get_action(game))
   end
-  return game:get_score(), game:get_best_tile()
+  return game:get_score()
 end
 
 -- Plays several games and returns the mean score.
 local function play_games(num_games)
 
-  local average = 0
+  local average = 0.0
   for i = 1, num_games do
     average = average + play_game()
   end

@@ -26,7 +26,7 @@ player_file = player_file or "random_player"
 num_games = num_games or 1
 local player = require(player_file)
 
--- Plays a new game and returns the score.
+-- Plays a new game and returns the score and the best tile.
 local function play_game()
   local game = game_manager:new()
   assert(game:get_score() == 0)
@@ -48,6 +48,7 @@ local average, max, best_tile = 0, 0, 0
 for i = 1, num_games do
   local score, current_best_tile = play_game()
   io.write(score .. " ")
+  io.flush()
   average = average + score
   if score > max then
     max = score
