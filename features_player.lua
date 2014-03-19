@@ -23,13 +23,28 @@ local verbose = false
 
 -- Weights below were obtained using the cross-entropy method
 -- (see cross_entropy.lua).
+
+-- Using immediate evaluation without spawned tile:
+--[[
 local weights = {
-  -8.39,
-  -11.74,
-  92.12,
-  19.11,
-  0.0,
+  -4.93,
+  -10.91,
+  85.84,
+  18.52,
+  -24.71,
 }
+--]]
+
+-- Taking spawned tile into account:
+--
+local weights = {
+  -7.50,
+  -11.48,
+  133.68,
+  42.07,
+  65.76,
+}
+--
 
 local function monotonicity(game)
 
@@ -184,10 +199,50 @@ local function evaluate(game)
     print("Number of free cells: " .. num_free_cells(game))
     print("Freedom: " .. freedom_degree(game))
     print("Evaluation: " .. value)
-    print()
   end
 
   return value
+end
+
+-- Returns the evaluation of a game state, taking into acocunt
+-- all possible spawning positions for the new tile.
+local function evaluate_with_spawns(game)
+
+  -- Try all possible spawning cases.
+  local board = game:get_board()
+  local mean_value = 0.0
+  local num_empty_cells = 0
+  local tiles = { [2] = 0.9, [4] = 0.1 }
+  for index = 1, game:get_num_cells() do
+    if board[index] == nil then
+      num_empty_cells = num_empty_cells + 1
+
+      for tile, tile_proba in pairs(tiles) do
+
+        board[index] = tile
+
+        local value = 0
+        for i = 1, #features do
+          value = value + features[i](game) * weights[i]
+        end
+        mean_value = mean_value + value * tile_proba
+
+        board[index] = nil
+
+        if verbose then
+          game:print()
+          print("Monotonicity: " .. monotonicity(game))
+          print("Difference between adjacent cells: " .. smoothness(game))
+          print("Number of free cells: " .. num_free_cells(game))
+          print("Freedom: " .. freedom_degree(game))
+          print("Evaluation: " .. value)
+          print()
+        end
+      end
+    end
+  end
+
+  return mean_value / num_empty_cells
 end
 
 function player:get_action(game)
@@ -196,7 +251,8 @@ function player:get_action(game)
   local best_value = -math.huge, best_action
   for i = 1, 4 do
     if game:move(i, false) then
-      local value = evaluate(game)
+      -- local value = evaluate(game)
+      local value = evaluate_with_spawns(game)
       game:undo()
       if value > best_value then
         best_value = value
