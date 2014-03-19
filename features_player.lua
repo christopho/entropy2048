@@ -39,22 +39,12 @@ local weights = {
 --
 local weights = {
 
-  -- Average score on 1000 games: 21588 points
-  -- Best score: 80000 (yes, exactly 80000!)
-  -1.56,
-  -35.93,
-  120.36,
-  13.90,
-  -34.56,
-
-  -- Best score: 79912
-  --[[
-  -6.25,
-  -56.15,
-  140.13,
-  1.94,
-  -4.39,
-  --]]
+  -- Best score: 102700
+  -7.22,
+  -69.03,
+  174.75,
+  -0.17,
+  37.36,
 
 }
 --
