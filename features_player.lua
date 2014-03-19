@@ -24,10 +24,10 @@ local verbose = false
 -- Weights below were obtained using the cross-entropy method
 -- (see cross_entropy.lua).
 local weights = {
-  36.76,
-  -5.06,
-  30.44,
-  33.30,
+  29.29,
+  -2.80,
+  36.44,
+  63.13,
 }
 
 local function monotonicity(game)
