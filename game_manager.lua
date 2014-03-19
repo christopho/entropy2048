@@ -67,6 +67,12 @@ function game_manager:new()
 
     local index = free_indexes[math.random(#free_indexes)]
     local tile = math.random(10) == 1 and 4 or 2
+
+    --[[  -- debug
+    local index = free_indexes[#free_indexes]
+    local tile = 2
+    --]]
+
     set_tile(index, tile)
 
     return true
@@ -74,12 +80,12 @@ function game_manager:new()
 
   -- Moves a tile from a cell to another one.
   -- The source cell must be non-empty and the destination cell must be empty.
-  local function move_tile(from, to)
-    local tile = get_tile(from)
+  local function move_tile(src_index, dst_index)
+    local tile = get_tile(src_index)
     assert(tile ~= nil)
-    assert(get_tile(to) == nil)
-    set_tile(from, nil)
-    set_tile(to, tile)
+    assert(get_tile(dst_index) == nil)
+    set_tile(src_index, nil)
+    set_tile(dst_index, tile)
   end
 
   local function initialize()
@@ -225,8 +231,11 @@ function game_manager:new()
             -- The destination is a tile that cannot be merged. Find an empty cell.
             local current_moved = false
             for i2 = first_i + increment, i - increment, increment do
-              dst_index = get_index(i2, j)
-              if get_tile(dst_index) == nil and not current_moved then
+              local dst_index = get_index(i2, j)
+              local dst_tile = board[dst_index]
+              if dst_tile == nil and not current_moved then
+                assert(get_tile(src_index) ~= nil)
+                assert(get_tile(dst_index) == nil)
                 move_tile(src_index, dst_index)
                 moved = true
                 current_moved = true
@@ -285,8 +294,11 @@ function game_manager:new()
             -- The destination is a tile that cannot be merged. Find an empty cell.
             local current_moved = false
             for j2 = first_j + increment, j - increment, increment do
-              dst_index = get_index(i, j2)
-              if get_tile(dst_index) == nil and not current_moved then
+              local dst_index = get_index(i, j2)
+              local dst_tile = board[dst_index]
+              if dst_tile == nil and not current_moved then
+                assert(get_tile(src_index) ~= nil)
+                assert(get_tile(dst_index) == nil)
                 move_tile(src_index, dst_index)
                 moved = true
                 current_moved = true
