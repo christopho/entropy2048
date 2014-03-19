@@ -15,7 +15,7 @@
 
 -- Artificial player that maximizes a weighted sum of features
 -- with a depth of 1.
--- Some of the features are inspired from
+-- Two of the features are inspired from
 -- http://stackoverflow.com/questions/22342854/what-is-the-optimal-algorithm-for-the-game-2048
 
 local player = {}
@@ -32,22 +32,32 @@ local weights = {
   85.84,
   18.52,
   -24.71,
+  0.0,
 }
 --]]
 
 -- Taking spawned tile into account:
---
 local weights = {
 
   -- Best score: 102700
+  --[[
   -7.22,
   -69.03,
   174.75,
   -0.17,
   37.36,
+  0.0,
+  --]]
+
+  -- Best score: 78960
+  -1.07,
+  -8.32,
+  15.28,
+  19.18,
+  2.93,
+  18.54,
 
 }
---
 
 local logs = {}
 local function log2(n)
@@ -62,6 +72,7 @@ local function log2(n)
   return result
 end
 
+-- Measures how monotonic (increasing or decreasing) rows and columns are.
 local function monotonicity(game)
 
   local result = 0
@@ -111,7 +122,8 @@ local function smoothness(game)
 
   for i = 1, num_cells do
     local tile = board[i] or 0
-    local right_tile, bottom_tile
+
+    local right_tile
     if i % num_columns ~= 0 then
       right_tile = board[i + 1] or 0
       if right_tile ~= nil then
@@ -122,6 +134,7 @@ local function smoothness(game)
       end
     end
 
+    local bottom_tile
     if i + num_columns <= num_cells then
       bottom_tile = board[i + num_columns] or 0
       if bottom_tile ~= nil then
@@ -136,7 +149,7 @@ local function smoothness(game)
   return result
 end
 
--- Number of free cells.
+-- Number of empty cells.
 local function num_free_cells(game)
 
   local board = game:get_board()
@@ -150,12 +163,54 @@ local function num_free_cells(game)
   return num_free_cells
 end
 
+-- Number of free cells plus number of paired tiles (two adjacent tiles with
+-- the same value).
+-- This feature tries to capture if several moves are possibles,
+-- in order to avoid game over.
+local function num_free_or_paired_cells(game)
+
+  local result = 0
+
+  local board = game:get_board()
+  local num_columns = game:get_num_columns()
+  local num_cells = game:get_num_cells()
+  for i = 1, num_cells do
+
+    local tile = board[i]
+    if tile == nil then
+      result = result + 1
+    else
+
+      local right_tile
+      if i % num_columns ~= 0 then
+        right_tile = board[i + 1] or 0
+        if right_tile == tile then
+          result = result + 1
+        end
+      end
+
+      local bottom_tile
+      if i + num_columns <= num_cells then
+        bottom_tile = board[i + num_columns] or 0
+        if bottom_tile == tile then
+          result = result + 1
+        end
+      end
+
+    end
+  end
+
+  return result
+end
+
 -- Maximum tile of the board.
 local function max_tile(game)
   return game:get_best_tile()
 end
 
 -- 1 if we can move in both directions, 0 otherwise.
+-- This feature tries to avoid situations where the player is forced to do
+-- one action that would move big tiles away from their side.
 local function freedom_degree(game)
 
   local board = game:get_board()
@@ -204,6 +259,7 @@ local features = {
   num_free_cells,
   max_tile,
   freedom_degree,
+  num_free_or_paired_cells,
 }
 
 -- Returns the evaluation of a game state.
@@ -220,6 +276,7 @@ local function evaluate(game)
     print("Difference between adjacent cells: " .. smoothness(game))
     print("Number of free cells: " .. num_free_cells(game))
     print("Freedom: " .. freedom_degree(game))
+    print("Number of free or paired cells: " .. num_free_or_paired_cells(game))
     print("Evaluation: " .. value)
   end
 
@@ -257,6 +314,7 @@ local function evaluate_with_spawns(game)
           print("Difference between adjacent cells: " .. smoothness(game))
           print("Number of free cells: " .. num_free_cells(game))
           print("Freedom: " .. freedom_degree(game))
+          print("Number of free or paired cells: " .. num_free_or_paired_cells(game))
           print("Evaluation: " .. value)
           print()
         end
