@@ -38,19 +38,27 @@ local weights = {
 -- Taking spawned tile into account:
 --
 local weights = {
-  -0.49,
-  -18.85,
-  34.16,
-  23.48,
-  -0.33,
+
+  -4.12,
+  -22.06,
+  39.97,
+  28.77,
+  7.83,
+
 }
 --
 
-local log = math.log
+local logs = {}
 local function log2(n)
-  -- TODO make a cache: parameter is always a simple integer
   assert(n > 0)
-  return log(n) / log(2)
+  local cached = logs[n]
+  if cached ~= nil then
+    return cached
+  end
+
+  local result = math.log(n) / math.log(2)
+  logs[n] = result
+  return result
 end
 
 local function monotonicity(game)
