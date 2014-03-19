@@ -24,10 +24,10 @@ local verbose = false
 -- Weights below were obtained using the cross-entropy method
 -- (see cross_entropy.lua).
 local weights = {
-  29.29,
-  -2.80,
-  36.44,
-  63.13,
+  -10.72,
+  -23.29,
+  71.35,
+  -4.22,
 }
 
 local function monotonicity(game)
@@ -78,21 +78,19 @@ local function smoothness(game)
   local num_columns = game:get_num_columns()
 
   for i = 1, num_cells do
-    local tile = board[i]
-    if tile ~= nil then
-      local right_tile, bottom_tile
-      if i % num_columns ~= 0 then
-        right_tile = board[i + 1]
-        if right_tile ~= nil then
-          result = result + math.abs(tile - right_tile)
-        end
+    local tile = board[i] or 0
+    local right_tile, bottom_tile
+    if i % num_columns ~= 0 then
+      right_tile = board[i + 1] or 0
+      if right_tile ~= nil then
+        result = result + math.abs(tile - right_tile)
       end
+    end
 
-      if i + num_columns <= num_cells then
-        bottom_tile = board[i + num_columns]
-        if bottom_tile ~= nil then
-          result = result + math.abs(tile - bottom_tile)
-        end
+    if i + num_columns <= num_cells then
+      bottom_tile = board[i + num_columns] or 0
+      if bottom_tile ~= nil then
+        result = result + math.abs(tile - bottom_tile)
       end
     end
   end
