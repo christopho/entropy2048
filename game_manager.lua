@@ -273,6 +273,9 @@ function game_manager:new()
             set_tile(dst_index, merged_tile)
             dst_candidate = dst_candidate + increment
             score = score + merged_tile
+            if merged_tile > best_tile then
+              best_tile = merged_tile
+            end
             moved = true
           else
             -- The destination is a tile that cannot be merged. Find an empty cell.
