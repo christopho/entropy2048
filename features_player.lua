@@ -38,13 +38,20 @@ local weights = {
 -- Taking spawned tile into account:
 --
 local weights = {
-  -7.50,
-  -11.48,
-  133.68,
-  42.07,
-  65.76,
+  -0.49,
+  -18.85,
+  34.16,
+  23.48,
+  -0.33,
 }
 --
+
+local log = math.log
+local function log2(n)
+  -- TODO make a cache: parameter is always a simple integer
+  assert(n > 0)
+  return log(n) / log(2)
+end
 
 local function monotonicity(game)
 
@@ -65,9 +72,9 @@ local function monotonicity(game)
     if i % num_columns ~= 0 then
       right_tile = board[i + 1] or 0
       if right_tile > tile then
-        right_increase = right_increase + (tile - right_tile)
+        right_increase = right_increase + log2(right_tile - tile)
       elseif tile > right_tile then
-        left_increase = left_increase + (right_tile - tile)
+        left_increase = left_increase + log2(tile - right_tile)
       end
     end
 
@@ -75,14 +82,14 @@ local function monotonicity(game)
     if i + num_columns <= num_cells then
       bottom_tile = board[i + num_columns] or 0
       if bottom_tile > tile then
-        bottom_increase = bottom_increase + (tile - bottom_tile)
+        bottom_increase = bottom_increase + log2(bottom_tile - tile)
       elseif tile > bottom_tile then
-        top_increase = top_increase + (bottom_tile - tile)
+        top_increase = top_increase + log2(tile - bottom_tile)
       end
     end
   end
 
-  return math.max(left_increase, right_increase) + math.max(top_increase, bottom_increase)
+  return math.min(left_increase, right_increase) + math.min(top_increase, bottom_increase)
 end
 
 -- Sum of differences between adjacent tiles.
@@ -99,14 +106,20 @@ local function smoothness(game)
     if i % num_columns ~= 0 then
       right_tile = board[i + 1] or 0
       if right_tile ~= nil then
-        result = result + math.abs(tile - right_tile)
+        local diff = tile - right_tile
+        if diff ~= 0 then
+          result = result + log2(math.abs(diff))
+        end
       end
     end
 
     if i + num_columns <= num_cells then
       bottom_tile = board[i + num_columns] or 0
       if bottom_tile ~= nil then
-        result = result + math.abs(tile - bottom_tile)
+        local diff = tile - bottom_tile
+        if diff ~= 0 then
+          result = result + log2(math.abs(diff))
+        end
       end
     end
   end
@@ -241,6 +254,8 @@ local function evaluate_with_spawns(game)
       end
     end
   end
+
+  assert(num_empty_cells > 0)
 
   return mean_value / num_empty_cells
 end
