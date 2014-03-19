@@ -24,10 +24,11 @@ local verbose = false
 -- Weights below were obtained using the cross-entropy method
 -- (see cross_entropy.lua).
 local weights = {
-  -10.72,
-  -23.29,
-  71.35,
-  -4.22,
+  -8.39,
+  -11.74,
+  92.12,
+  19.11,
+  0.0,
 }
 
 local function monotonicity(game)
@@ -98,7 +99,7 @@ local function smoothness(game)
   return result
 end
 
--- Number of free cells before spawning the new tile.
+-- Number of free cells.
 local function num_free_cells(game)
 
   local board = game:get_board()
@@ -109,7 +110,7 @@ local function num_free_cells(game)
     end
   end
 
-  return num_free_cells * num_free_cells
+  return num_free_cells
 end
 
 -- Maximum tile of the board.
@@ -117,11 +118,55 @@ local function max_tile(game)
   return game:get_best_tile()
 end
 
+-- 1 if we can move in both directions, 0 otherwise.
+local function freedom_degree(game)
+
+  local board = game:get_board()
+  local num_cells = game:get_num_cells()
+  local num_columns = game:get_num_columns()
+
+  local can_move_horizontally = false
+  local can_move_vertically = false
+
+  for i = 1, num_cells do
+    local tile = board[i]
+
+    -- Find a horizontal empty/full or full/empty transition,
+    -- or two horizontally adjacent tiles.
+    local right_tile
+    if not can_move_horizontally then
+      if i % num_columns ~= 0 then
+        right_tile = board[i + 1]
+        can_move_horizontally = ((right_tile == nil) ~= (tile == nil))  -- Full near empty.
+            or (tile ~= nil and right_tile == tile)  -- Adjacent tiles.
+      end
+    end
+
+    -- Find a vertical empty/full or full/empty transition,
+    -- or two vertically adjacent tiles.
+    local bottom_tile
+    if not can_move_vertically then
+      if i + num_columns <= num_cells then
+        bottom_tile = board[i + num_columns]
+        can_move_vertically = ((bottom_tile == nil) ~= (tile == nil))  -- Full near empty.
+            or (tile ~= nil and bottom_tile == tile)  -- Adjacent tiles.
+      end
+    end
+
+    if can_move_horizontally and can_move_vertically then
+      return 1
+    end
+  end
+
+  return 0
+end
+
 local features = {
   monotonicity,
   smoothness,
   num_free_cells,
   max_tile,
+  freedom_degree,
 }
 
 -- Returns the evaluation of a game state.
@@ -137,6 +182,7 @@ local function evaluate(game)
     print("Monotonicity: " .. monotonicity(game))
     print("Difference between adjacent cells: " .. smoothness(game))
     print("Number of free cells: " .. num_free_cells(game))
+    print("Freedom: " .. freedom_degree(game))
     print("Evaluation: " .. value)
     print()
   end
